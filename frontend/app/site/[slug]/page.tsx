@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 import { SiteRenderer } from "@/renderer/SiteRenderer";
-import { demoSitesBySlug, getDemoSite } from "@/lib/demo/sites";
+import { getDemoSite, listDemoSiteSlugs } from "@/lib/demo/sites";
 
 interface SitePageProps {
   params: Promise<{ slug: string }>;
 }
 
 export function generateStaticParams() {
-  return Object.keys(demoSitesBySlug).map((slug) => ({ slug }));
+  return listDemoSiteSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: SitePageProps) {

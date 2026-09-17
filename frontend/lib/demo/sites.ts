@@ -27,3 +27,7 @@ export const demoSitesBySlug: Record<string, DemoSite> = {
 export function getDemoSite(slug: string): DemoSite | undefined {
   return demoSitesBySlug[slug];
 }
+
+export function listDemoSiteSlugs(): string[] {
+  return Object.keys(demoSitesBySlug);
+}

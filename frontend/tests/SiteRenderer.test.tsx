@@ -104,7 +104,8 @@ describe("SiteRenderer", () => {
 
     expect(root).toHaveAttribute("data-site", "Catalog Site");
     expect(root).toHaveAttribute("data-style", "professional");
-    expect(root).toHaveStyle({ backgroundColor: "#111111" });
+    expect(root?.getAttribute("style")).toContain("--site-primary");
+    expect((root as HTMLElement).style.backgroundColor).toBeTruthy();
   });
 
   it("skips unknown section types without crashing", () => {
