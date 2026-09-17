@@ -1,0 +1,9 @@
+export { HeroSection } from "@/components/site-sections/HeroSection";
+export { AboutSection } from "@/components/site-sections/AboutSection";
+export { ServicesSection } from "@/components/site-sections/ServicesSection";
+export { PricingSection } from "@/components/site-sections/PricingSection";
+export { GallerySection } from "@/components/site-sections/GallerySection";
+export { TestimonialsSection } from "@/components/site-sections/TestimonialsSection";
+export { CTASection } from "@/components/site-sections/CTASection";
+export { ContactSection } from "@/components/site-sections/ContactSection";
+export { FooterSection } from "@/components/site-sections/FooterSection";

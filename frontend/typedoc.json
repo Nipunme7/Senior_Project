@@ -1,0 +1,18 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "lib/types/website-config.ts",
+    "renderer/SiteRenderer.tsx",
+    "renderer/componentMap.ts",
+    "lib/media.ts",
+    "lib/demo/sites.ts",
+    "components/site-sections/section-props.ts"
+  ],
+  "out": "docs-typedoc",
+  "name": "AI Website Platform — TypeScript API",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "skipErrorChecking": true,
+  "exclude": ["tests/**/*", "**/*.test.ts", "**/*.test.tsx"]
+}
