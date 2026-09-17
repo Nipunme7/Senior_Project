@@ -18,8 +18,8 @@ out/
 npm-debug.log*
 *.tsbuildinfo
 
-# Generated documentation
-site/
+# Generated documentation (repo-root MkDocs output only)
+/site/
 frontend/docs-typedoc/
 
 # Keep local; do not publish
