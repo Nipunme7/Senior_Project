@@ -4,14 +4,15 @@ Project documentation for the frontend renderer, tests, and CI.
 
 ## Current status
 
-Phases 1–4 are in progress on the frontend:
+Phases 1–4 are complete on the frontend. Phase 5 (Supabase foundation) is in progress:
 
 1. Controlled React section catalog
 2. Shared `SiteRenderer` with `/site/barber` and `/site/cafe`
 3. Vitest + React Testing Library
 4. GitHub Actions, TypeDoc, and MkDocs
+5. Supabase tables, RLS, client, and published-site reads (with demo fallback)
 
-Supabase, FastAPI, OpenAI, media uploads, and subdomains are **not** implemented yet.
+FastAPI, OpenAI, media uploads, and subdomains are **not** implemented yet.
 
 ## Local doc builds
 

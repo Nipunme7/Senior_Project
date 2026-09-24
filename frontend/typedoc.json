@@ -6,6 +6,8 @@
     "renderer/componentMap.ts",
     "lib/media.ts",
     "lib/demo/sites.ts",
+    "lib/sites/get-site.ts",
+    "lib/supabase/client.ts",
     "components/site-sections/section-props.ts"
   ],
   "out": "docs-typedoc",

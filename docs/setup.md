@@ -36,4 +36,20 @@ npm run build
 
 ## Environment
 
-Phase 4 does not require secrets. `.env.example` is a placeholder for later OpenAI and Supabase keys. Do not commit `.env`.
+Copy `.env.example` to `frontend/.env` (or `frontend/.env.local`) and fill in Supabase values:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+Do not commit `.env` files. Never put the service-role key in frontend code.
+
+## Supabase foundation (Phase 5)
+
+1. Create a free Supabase project.
+2. Add the public URL and anon key to `frontend/.env`.
+3. In the Supabase SQL Editor, run `supabase/migrations/001_supabase_foundation.sql`.
+4. Optionally create an Auth user and run `supabase/seed_demo_sites.sql` (replace `YOUR_USER_UUID`).
+
+Until rows are seeded, `/site/barber` and `/site/cafe` still render from local demo configs.
