@@ -53,3 +53,12 @@ Do not commit `.env` files. Never put the service-role key in frontend code.
 4. Optionally create an Auth user and run `supabase/seed_demo_sites.sql` (replace `YOUR_USER_UUID`).
 
 Until rows are seeded, `/site/barber` and `/site/cafe` still render from local demo configs.
+
+## Media system (Phase 6)
+
+1. In the Supabase SQL Editor, run `supabase/migrations/002_media_system.sql`.
+2. For local testing, Auth → Providers → Email: you may disable “Confirm email”.
+3. Open [http://localhost:3000/owner/login](http://localhost:3000/owner/login), sign up, then go to `/owner/media`.
+4. Create a draft site, upload an image or small video, and copy the media ID for later WebsiteConfig use.
+
+Published sites load media rows from Supabase Storage; demo routes still use `frontend/public/demo`.

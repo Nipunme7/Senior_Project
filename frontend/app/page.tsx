@@ -35,6 +35,13 @@ export default function Home() {
             </li>
           ))}
         </ul>
+
+        <p className="mt-12 text-sm text-[#cfc9bb]">
+          Owner media uploads:{" "}
+          <Link href="/owner/media" className="text-[#C9A45C] underline">
+            /owner/media
+          </Link>
+        </p>
       </div>
     </main>
   );
