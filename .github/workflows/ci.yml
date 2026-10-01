@@ -62,16 +62,13 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
-    defaults:
-      run:
-        working-directory: frontend
+    # Run from repo root. Vercel project Root Directory is already `frontend`;
+    # using working-directory: frontend here doubles the path (frontend/frontend).
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel project metadata

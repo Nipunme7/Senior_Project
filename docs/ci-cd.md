@@ -25,7 +25,7 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 
 ### Deploy Frontend job (CD)
 
-Runs only on `main` after both jobs above succeed:
+Runs only on `main` after both jobs above succeed (from the **repo root**; Vercel Root Directory = `frontend`):
 
 1. Install Vercel CLI
 2. `vercel pull` (production)
