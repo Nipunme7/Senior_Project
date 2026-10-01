@@ -7,6 +7,7 @@ nav:
   - Setup: setup.md
   - Testing: testing.md
   - CI/CD: ci-cd.md
+  - Hosting: hosting.md
 
 theme:
   name: material

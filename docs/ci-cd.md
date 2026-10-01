@@ -1,34 +1,59 @@
 # CI/CD
 
-GitHub Actions runs on pushes and pull requests to `main`.
+GitHub Actions workflow: `.github/workflows/ci.yml`
 
-## Current pipeline
+## When it runs
 
-Workflow: `.github/workflows/ci.yml`
+- **Pull requests** — Frontend + Documentation checks (no production deploy)
+- **Push to `main`** — same checks, then **Deploy Frontend** to Vercel if checks pass
 
-Frontend job:
+## Pipeline
 
-1. Install npm dependencies
+### Frontend job
+
+1. Install npm dependencies (`npm ci`)
 2. Lint
 3. Typecheck
 4. Vitest
 5. Next.js production build
 6. TypeDoc build
 
-Documentation job:
+### Documentation job
 
 1. TypeDoc build
 2. MkDocs build (`mkdocs build --strict`)
 
-Deployment is **not** automated yet. Do not deploy unless these checks pass.
+### Deploy Frontend job (CD)
+
+Runs only on `main` after both jobs above succeed:
+
+1. Install Vercel CLI
+2. `vercel pull` (production)
+3. `vercel build --prod`
+4. `vercel deploy --prebuilt --prod`
+
+Required GitHub Actions secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+See [Hosting](hosting.md) for first-time Vercel setup.
+
+## Rule
+
+Do not treat a merge as successful if Frontend or Documentation failed.  
+Do not production-deploy from a feature branch.
 
 ## When FastAPI is added
 
 Extend CI with:
 
-- backend lint
+- backend dependency install
+- backend lint/checks
 - pytest
-- FastAPI startup/import validation
-- OpenAPI/Swagger via FastAPI `/docs` and `/redoc`
+- FastAPI import/startup validation
 
-Do not add those jobs before the backend exists.
+Add a separate Render deploy step only after the backend exists and has its own secrets.

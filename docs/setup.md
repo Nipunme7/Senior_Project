@@ -62,3 +62,9 @@ Until rows are seeded, `/site/barber` and `/site/cafe` still render from local d
 4. Create a draft site, upload an image or small video, and copy the media ID for later WebsiteConfig use.
 
 Published sites load media rows from Supabase Storage; demo routes still use `frontend/public/demo`.
+
+## Production frontend (Vercel)
+
+After merging to `main`, GitHub Actions deploys the `frontend/` app to Vercel when deploy secrets are configured.
+
+See [Hosting](hosting.md) and [CI/CD](ci-cd.md).
