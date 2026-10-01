@@ -45,7 +45,7 @@ On every push to `main`, GitHub Actions:
 1. Runs Frontend + Documentation checks
 2. If both pass, runs **Deploy Frontend** to Vercel production
 
-The Deploy job runs from the **repo root**. Keep Vercel **Root Directory** set to `frontend` (do not also `cd frontend` in Actions, or the path becomes `frontend/frontend`).
+The Deploy job runs from the **repo root** and uses cloud builds (`vercel deploy --prod`). Keep Vercel **Root Directory** set to `frontend`. Do not use local `vercel build --prebuilt` in Actions for this monorepo layout.
 
 Pull requests do **not** production-deploy; they only run CI.
 

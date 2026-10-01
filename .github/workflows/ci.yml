@@ -62,8 +62,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
-    # Run from repo root. Vercel project Root Directory is already `frontend`;
-    # using working-directory: frontend here doubles the path (frontend/frontend).
+    # Run from repo root. Do NOT use local `vercel build --prebuilt` here:
+    # with Root Directory=frontend it resolves to frontend/frontend on the runner.
+    # Upload source and let Vercel build in the cloud instead.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -71,20 +72,10 @@ jobs:
           node-version: "22"
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      - name: Pull Vercel project metadata
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      - name: Build for Vercel
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel (production)
+        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      - name: Deploy to Vercel (production)
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
