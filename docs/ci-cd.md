@@ -28,9 +28,7 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 Runs only on `main` after both jobs above succeed (from the **repo root**; Vercel Root Directory = `frontend`):
 
 1. Install Vercel CLI
-2. `vercel pull` (production)
-3. `vercel build --prod`
-4. `vercel deploy --prebuilt --prod`
+2. `vercel deploy --prod --yes` (Vercel builds in the cloud — avoids local `frontend/frontend` path bugs)
 
 Required GitHub Actions secrets:
 
