@@ -31,6 +31,27 @@ def validate_website_config(config: WebsiteConfig) -> WebsiteConfig:
     return config
 
 
+def validate_media_ids(
+    config: WebsiteConfig,
+    allowed_media_ids: set[str] | None,
+) -> WebsiteConfig:
+    """
+    If the caller provided an allow-list of media IDs, reject any section
+    mediaIds outside that set. When no allow-list is provided, skip the check
+    (deeper ownership checks arrive in a later phase).
+    """
+    if allowed_media_ids is None:
+        return config
+
+    for section in config.sections:
+        for media_id in section.mediaIds or []:
+            if media_id not in allowed_media_ids:
+                raise ValidationError(
+                    f"Section '{section.id}' references unknown media id '{media_id}'"
+                )
+    return config
+
+
 def summarize_config(config: WebsiteConfig) -> dict:
     return {
         "sectionCount": len(config.sections),

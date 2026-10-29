@@ -4,7 +4,7 @@ Project documentation for the frontend renderer, FastAPI backend, tests, and CI.
 
 ## Current status
 
-Phases 1–6b are complete. Phase 7 (FastAPI backend) is in progress:
+Phases 1–7 are complete. Phase 8 (Gemini generation) is in progress:
 
 1. Controlled React section catalog
 2. Shared `SiteRenderer` with `/site/barber` and `/site/cafe`
@@ -13,9 +13,10 @@ Phases 1–6b are complete. Phase 7 (FastAPI backend) is in progress:
 5. Supabase tables, RLS, client, and published-site reads
 6. Media upload, media IDs, and Storage resolution
 7. Vercel production deploy from `main` after CI
-8. **Now:** FastAPI validation, catalog, auth foundation, site APIs
+8. FastAPI validation, catalog, auth foundation, site APIs
+9. **Now:** Gemini full-site `WebsiteConfig` generation + validation gate
 
-OpenAI generation and subdomains are **not** implemented yet.
+Subdomains are **not** implemented yet.
 
 ## Local doc builds
 

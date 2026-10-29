@@ -6,9 +6,9 @@ This repository contains the Next.js frontend, FastAPI backend, tests, CI, and p
 
 ## Current phase
 
-Phase 7: FastAPI backend (validation, catalog, auth foundation, site APIs).
+Phase 8: Gemini full-site generation (`POST /v1/sites/generate`) on the FastAPI backend.
 
-Still later: OpenAI generation, section editing, publish UX, subdomains.
+Still later: section editing, publish UX, subdomains.
 
 ## Run the frontend
 
