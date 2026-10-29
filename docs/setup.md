@@ -38,6 +38,7 @@ Useful routes:
 - `GET /health`
 - `GET /v1/catalog`
 - `POST /v1/sites/validate`
+- `POST /v1/sites/generate` (requires auth + `GEMINI_API_KEY`; optional `persist` + `slug`)
 - `POST /v1/sites` (requires Supabase bearer token + `SUPABASE_JWT_SECRET`)
 - `GET /v1/sites/public/{slug}`
 
@@ -58,6 +59,8 @@ SUPABASE_ANON_KEY=...
 SUPABASE_JWT_SECRET=...          # Project Settings → API → JWT Secret
 SUPABASE_SERVICE_ROLE_KEY=...    # optional; needed to persist sites from the API
 CORS_ORIGINS=http://localhost:3000
+GEMINI_API_KEY=...               # https://aistudio.google.com/apikey
+GEMINI_MODEL=gemini-2.0-flash    # optional override
 ```
 
 Never put the service-role key in frontend code. Do not commit `.env` files.

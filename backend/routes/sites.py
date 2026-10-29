@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from ai.gemini_client import GeminiError
 from schemas.api import (
     CreateSiteRequest,
     CreateSiteResponse,
+    GenerateSiteRequest,
+    GenerateSiteResponse,
     PublicSiteResponse,
     SiteSummary,
     ValidateSiteRequest,
@@ -10,6 +13,7 @@ from schemas.api import (
 )
 from schemas.website_config import WebsiteConfig
 from services.auth import AuthenticatedUser, get_current_user
+from services.generation import generate_validated_website_config
 from services.settings import Settings, get_settings
 from services.sites import create_draft_site, get_published_site_by_slug
 from services.validation import ValidationError, summarize_config, validate_website_config
@@ -34,6 +38,81 @@ def validate_site(body: ValidateSiteRequest) -> ValidateSiteResponse:
         config=config,
         sectionCount=summary["sectionCount"],
         sectionTypes=summary["sectionTypes"],
+    )
+
+
+@router.post("/generate", response_model=GenerateSiteResponse)
+async def generate_site(
+    body: GenerateSiteRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+) -> GenerateSiteResponse:
+    """
+    Generate a WebsiteConfig with Gemini for the authenticated owner.
+    Output is validated before return. Set persist=true + slug to save a draft.
+    """
+    contact = body.contact.model_dump() if body.contact else None
+    media = [item.model_dump() for item in body.media] if body.media else None
+
+    try:
+        config = generate_validated_website_config(
+            settings=settings,
+            business_name=body.businessName.strip(),
+            business_type=body.businessType,
+            description=body.description,
+            services=body.services,
+            contact=contact,
+            style=body.style,
+            media=media,
+        )
+    except GeminiError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+
+    summary = summarize_config(config)
+    site_summary: SiteSummary | None = None
+
+    if body.persist:
+        if not body.slug:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="slug is required when persist=true",
+            )
+        try:
+            row = await create_draft_site(
+                settings=settings,
+                owner_id=user.id,
+                business_name=body.businessName.strip(),
+                slug=body.slug.strip().lower(),
+                style=body.style,
+                config=config,
+            )
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
+        site_summary = SiteSummary(
+            id=str(row["id"]),
+            ownerId=str(row["owner_id"]),
+            businessName=row["business_name"],
+            slug=row["slug"],
+            status=row["status"],
+            style=row.get("style"),
+        )
+
+    return GenerateSiteResponse(
+        config=config,
+        sectionCount=summary["sectionCount"],
+        sectionTypes=summary["sectionTypes"],
+        site=site_summary,
     )
 
 

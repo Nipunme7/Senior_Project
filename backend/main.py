@@ -13,8 +13,8 @@ settings = get_settings()
 app = FastAPI(
     title="AI Website Platform API",
     description=(
-        "Trusted application layer for validation, authorization, and site APIs. "
-        "AI generation arrives in a later phase."
+        "Trusted application layer for validation, authorization, Gemini generation, "
+        "and site APIs."
     ),
     version="0.1.0",
 )
