@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- Node.js 20
+- Node.js 20+
 - npm
-- Python 3.12 (documentation builds only)
+- Python 3.12 (docs + FastAPI backend)
 
 ## Frontend
 
@@ -21,50 +21,53 @@ Demo sites:
 - [http://localhost:3000/site/barber](http://localhost:3000/site/barber) — Elite Cuts
 - [http://localhost:3000/site/cafe](http://localhost:3000/site/cafe) — Everest Coffee
 
-Both routes use the same `SiteRenderer` with different hard-coded `WebsiteConfig` objects.
-
-## Checks
-
-From `frontend/`:
+## Backend (FastAPI)
 
 ```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
+cd backend
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
+
+Open API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+Useful routes:
+
+- `GET /health`
+- `GET /v1/catalog`
+- `POST /v1/sites/validate`
+- `POST /v1/sites` (requires Supabase bearer token + `SUPABASE_JWT_SECRET`)
+- `GET /v1/sites/public/{slug}`
 
 ## Environment
 
-Copy `.env.example` to `frontend/.env` (or `frontend/.env.local`) and fill in Supabase values:
+Frontend (`frontend/.env`):
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-Do not commit `.env` files. Never put the service-role key in frontend code.
+Backend (`backend/.env` or process env):
 
-## Supabase foundation (Phase 5)
+```bash
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+SUPABASE_JWT_SECRET=...          # Project Settings → API → JWT Secret
+SUPABASE_SERVICE_ROLE_KEY=...    # optional; needed to persist sites from the API
+CORS_ORIGINS=http://localhost:3000
+```
 
-1. Create a free Supabase project.
-2. Add the public URL and anon key to `frontend/.env`.
-3. In the Supabase SQL Editor, run `supabase/migrations/001_supabase_foundation.sql`.
-4. Optionally create an Auth user and run `supabase/seed_demo_sites.sql` (replace `YOUR_USER_UUID`).
+Never put the service-role key in frontend code. Do not commit `.env` files.
 
-Until rows are seeded, `/site/barber` and `/site/cafe` still render from local demo configs.
+JWT Secret is in Supabase **Project Settings → API** (Legacy JWT secret / JWT Secret).
 
-## Media system (Phase 6)
+## Supabase / media
 
-1. In the Supabase SQL Editor, run `supabase/migrations/002_media_system.sql`.
-2. For local testing, Auth → Providers → Email: you may disable “Confirm email”.
-3. Open [http://localhost:3000/owner/login](http://localhost:3000/owner/login), sign up, then go to `/owner/media`.
-4. Create a draft site, upload an image or small video, and copy the media ID for later WebsiteConfig use.
-
-Published sites load media rows from Supabase Storage; demo routes still use `frontend/public/demo`.
+See earlier Phase 5–6 steps: run `001_supabase_foundation.sql` and `002_media_system.sql`, then use `/owner/media` for uploads.
 
 ## Production frontend (Vercel)
 
-After merging to `main`, GitHub Actions deploys the `frontend/` app to Vercel when deploy secrets are configured.
-
-See [Hosting](hosting.md) and [CI/CD](ci-cd.md).
+After merging to `main`, GitHub Actions deploys the frontend when secrets are configured. See [Hosting](hosting.md) and [CI/CD](ci-cd.md).

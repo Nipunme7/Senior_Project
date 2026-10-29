@@ -1,42 +1,40 @@
 # Testing
 
-Frontend tests are an early project requirement, not a final cleanup task.
+Testing is an early project requirement, not a final cleanup task.
 
-## Tooling
+## Frontend
+
+Tooling:
 
 - Vitest
 - React Testing Library
 - jsdom
-
-Backend pytest coverage is **not** in this phase. It will be added when FastAPI exists.
-
-## Run tests
 
 ```bash
 cd frontend
 npm run test
 ```
 
-Watch mode:
+Covers renderer/registry/demo/media helpers under `frontend/tests/`.
+
+## Backend
+
+Tooling:
+
+- pytest
+- FastAPI TestClient
 
 ```bash
-npm run test:watch
+cd backend
+pip install -r requirements.txt
+pytest
 ```
 
-## What is covered now
+Covers:
 
-- `componentMap` registers every catalog section type
-- `SiteRenderer` renders the matching component for each type
-- Section order matches `WebsiteConfig`
-- Unknown section types are skipped instead of crashing
-- Barber and cafe configs render distinct content
-- Important section variants render
-- `/site/missing` calls `notFound()`
+- `/health`
+- `/v1/catalog`
+- `WebsiteConfig` validation (valid, unknown type, bad variant, duplicate ids)
+- auth-required site create (401 / JWT / local draft mode)
 
-Preview-editor controls are not tested yet because that UI does not exist.
-
-## Test location
-
-```text
-frontend/tests/
-```
+AI generation is not covered by live OpenAI calls in unit tests.

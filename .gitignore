@@ -1,5 +1,9 @@
 # Dependencies
 node_modules/
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Next.js
 .next/
