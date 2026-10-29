@@ -4,7 +4,7 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 
 ## When it runs
 
-- **Pull requests** — Frontend + Documentation checks (no production deploy)
+- **Pull requests** — Frontend + Documentation + Backend (no production deploy)
 - **Push to `main`** — same checks, then **Deploy Frontend** to Vercel if checks pass
 
 ## Pipeline
@@ -23,14 +23,20 @@ GitHub Actions workflow: `.github/workflows/ci.yml`
 1. TypeDoc build
 2. MkDocs build (`mkdocs build --strict`)
 
+### Backend job
+
+1. Install Python deps from `backend/requirements.txt`
+2. pytest
+3. FastAPI import/startup verification (`from main import app`)
+
 ### Deploy Frontend job (CD)
 
-Runs only on `main` after both jobs above succeed (from the **repo root**; Vercel Root Directory = `frontend`):
+Runs only on `main` after Frontend, Documentation, and Backend succeed:
 
 1. Install Vercel CLI
-2. `vercel deploy --prod --yes` (Vercel builds in the cloud — avoids local `frontend/frontend` path bugs)
+2. `vercel deploy --prod --yes`
 
-Required GitHub Actions secrets:
+Required GitHub Actions secrets for deploy:
 
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
@@ -42,16 +48,7 @@ See [Hosting](hosting.md) for first-time Vercel setup.
 
 ## Rule
 
-Do not treat a merge as successful if Frontend or Documentation failed.  
+Do not treat a merge as successful if Frontend, Documentation, or Backend failed.  
 Do not production-deploy from a feature branch.
 
-## When FastAPI is added
-
-Extend CI with:
-
-- backend dependency install
-- backend lint/checks
-- pytest
-- FastAPI import/startup validation
-
-Add a separate Render deploy step only after the backend exists and has its own secrets.
+FastAPI hosting on Render is still later (Phase 14 / deployment polish).

@@ -56,9 +56,29 @@ jobs:
           pip install -r requirements-docs.txt
           mkdocs build --strict
 
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        run: pip install -r requirements.txt
+      - name: Run pytest
+        run: pytest
+      - name: Verify FastAPI app imports
+        run: python -c "from main import app; assert app.title"
+
   deploy:
     name: Deploy Frontend
-    needs: [frontend, docs]
+    needs: [frontend, docs, backend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production

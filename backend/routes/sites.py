@@ -1,0 +1,102 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from schemas.api import (
+    CreateSiteRequest,
+    CreateSiteResponse,
+    PublicSiteResponse,
+    SiteSummary,
+    ValidateSiteRequest,
+    ValidateSiteResponse,
+)
+from schemas.website_config import WebsiteConfig
+from services.auth import AuthenticatedUser, get_current_user
+from services.settings import Settings, get_settings
+from services.sites import create_draft_site, get_published_site_by_slug
+from services.validation import ValidationError, summarize_config, validate_website_config
+
+router = APIRouter(prefix="/v1/sites", tags=["sites"])
+
+
+@router.post("/validate", response_model=ValidateSiteResponse)
+def validate_site(body: ValidateSiteRequest) -> ValidateSiteResponse:
+    """Validate a WebsiteConfig against schema and catalog rules. Does not persist."""
+    try:
+        config = validate_website_config(body.config)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+
+    summary = summarize_config(config)
+    return ValidateSiteResponse(
+        valid=True,
+        config=config,
+        sectionCount=summary["sectionCount"],
+        sectionTypes=summary["sectionTypes"],
+    )
+
+
+@router.post("", response_model=CreateSiteResponse, status_code=status.HTTP_201_CREATED)
+async def create_site(
+    body: CreateSiteRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+) -> CreateSiteResponse:
+    """
+    Create a draft site for the authenticated owner.
+    Requires Authorization: Bearer <supabase access token>.
+    """
+    try:
+        row = await create_draft_site(
+            settings=settings,
+            owner_id=user.id,
+            business_name=body.businessName.strip(),
+            slug=body.slug.strip().lower(),
+            style=body.style,
+            config=body.config,
+        )
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+
+    config = WebsiteConfig.model_validate(row["site_config"])
+    return CreateSiteResponse(
+        site=SiteSummary(
+            id=str(row["id"]),
+            ownerId=str(row["owner_id"]),
+            businessName=row["business_name"],
+            slug=row["slug"],
+            status=row["status"],
+            style=row.get("style"),
+        ),
+        config=config,
+    )
+
+
+@router.get("/public/{slug}", response_model=PublicSiteResponse)
+async def read_public_site(
+    slug: str,
+    settings: Settings = Depends(get_settings),
+) -> PublicSiteResponse:
+    """Return a published site config. Drafts are never exposed here."""
+    row = await get_published_site_by_slug(settings=settings, slug=slug)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Site not found")
+
+    try:
+        config = validate_website_config(WebsiteConfig.model_validate(row["site_config"]))
+    except (ValidationError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Stored site_config is invalid: {exc}",
+        ) from exc
+
+    return PublicSiteResponse(
+        slug=row["slug"],
+        businessName=row["business_name"],
+        status="published",
+        config=config,
+    )

@@ -2,13 +2,13 @@
 
 An AI-powered website generation platform for small businesses.
 
-This repository contains the Next.js frontend, tests, CI, and public project docs.
+This repository contains the Next.js frontend, FastAPI backend, tests, CI, and public project docs.
 
 ## Current phase
 
-Phase 4: GitHub Actions CI plus TypeDoc and MkDocs documentation builds.
+Phase 7: FastAPI backend (validation, catalog, auth foundation, site APIs).
 
-Still not started: Supabase, FastAPI, OpenAI, uploads, and subdomains.
+Still later: OpenAI generation, section editing, publish UX, subdomains.
 
 ## Run the frontend
 
@@ -23,15 +23,32 @@ Then open [http://localhost:3000](http://localhost:3000).
 - [http://localhost:3000/site/barber](http://localhost:3000/site/barber) — Elite Cuts
 - [http://localhost:3000/site/cafe](http://localhost:3000/site/cafe) — Everest Coffee
 
+## Run the backend
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
 ## Checks
+
+Frontend:
 
 ```bash
 cd frontend
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-npm run docs:typedoc
+npm run lint && npm run typecheck && npm run test && npm run build
+```
+
+Backend:
+
+```bash
+cd backend
+pytest
 ```
 
 ## Documentation
@@ -44,5 +61,7 @@ mkdocs serve
 ## Stack
 
 - Next.js, React, TypeScript, Tailwind CSS
-- Vitest, React Testing Library
-- GitHub Actions, TypeDoc, MkDocs
+- FastAPI, Pydantic, pytest
+- Supabase (Postgres, Auth, Storage)
+- Vitest, GitHub Actions, TypeDoc, MkDocs
+- Vercel (frontend hosting)
