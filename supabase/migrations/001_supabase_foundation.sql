@@ -261,8 +261,8 @@ with check (
 -- Storage foundation (uploads come in Phase 6)
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
-values ('site-media', 'site-media', false)
-on conflict (id) do nothing;
+values ('site-media', 'site-media', true)
+on conflict (id) do update set public = excluded.public;
 
 drop policy if exists "site_media_select_own" on storage.objects;
 create policy "site_media_select_own"

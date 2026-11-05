@@ -54,7 +54,8 @@ def test_generate_returns_validated_config(client, monkeypatch):
 
     def fake_generate(*, settings, prompt):
         assert "Elite Cuts" in prompt
-        assert "Approved component catalog" in prompt
+        assert "Catalog:" in prompt
+        assert "hero" in prompt
         return {
             **MINIMAL_CONFIG,
             "siteName": "Elite Cuts",
@@ -107,12 +108,10 @@ def get_settings_clear():
     get_settings.cache_clear()
 
 
-def test_generate_rejects_invalid_ai_output(client, monkeypatch):
+def test_generate_normalizes_invalid_variant(client, monkeypatch):
     headers = _auth_headers(monkeypatch)
-    calls = {"n": 0}
 
     def fake_generate(*, settings, prompt):
-        calls["n"] += 1
         return {
             **MINIMAL_CONFIG,
             "sections": [
@@ -120,7 +119,7 @@ def test_generate_rejects_invalid_ai_output(client, monkeypatch):
                     "id": "hero_01",
                     "type": "hero",
                     "variant": "cards",
-                    "props": {"headline": "Bad variant"},
+                    "props": {"headline": "Fixed by normalize"},
                 }
             ],
         }
@@ -135,8 +134,9 @@ def test_generate_rejects_invalid_ai_output(client, monkeypatch):
         headers=headers,
         json={"businessName": "Bad Shop"},
     )
-    assert response.status_code == 422
-    assert calls["n"] == 2
+    assert response.status_code == 200
+    body = response.json()
+    assert body["config"]["sections"][0]["variant"] == "centered"
     get_settings_clear()
 
 

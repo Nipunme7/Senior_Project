@@ -38,4 +38,6 @@ Covers:
 - auth-required site create (401 / JWT / local draft mode)
 - Gemini generate (auth, missing key, mocked success, invalid output retry, media id reject, persist)
 
+Frontend also covers the FastAPI client helper and confirms public site resolution no longer lists hardcoded demo slugs.
+
 AI generation unit tests mock Gemini. Do not depend on live Gemini calls in normal pytest.

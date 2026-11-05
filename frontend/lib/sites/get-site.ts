@@ -1,12 +1,15 @@
-import { demoMediaById } from "@/lib/demo/media";
-import { getDemoSite, listDemoSiteSlugs, type DemoSite } from "@/lib/demo/sites";
-import { mediaRowsToAssets } from "@/lib/media/resolve-rows";
+import { ensureSectionMediaIds } from "@/lib/media/ensure-section-media";
+import { mediaRowsToSignedAssets } from "@/lib/media/resolve-rows";
 import { createSupabaseClient } from "@/lib/supabase/client";
 import type { MediaRow, SiteRow } from "@/lib/supabase/database.types";
 import { parseWebsiteConfig } from "@/lib/supabase/parse-website-config";
-import type { MediaAsset } from "@/lib/types/website-config";
+import type { MediaAsset, WebsiteConfig } from "@/lib/types/website-config";
 
-export type ResolvedSite = DemoSite;
+export interface ResolvedSite {
+  slug: string;
+  config: WebsiteConfig;
+  mediaById: Record<string, MediaAsset>;
+}
 
 type PublishedSiteSelect = Pick<
   SiteRow,
@@ -15,22 +18,15 @@ type PublishedSiteSelect = Pick<
 
 /**
  * Resolve a tenant site for `/site/[slug]`.
- *
- * Order:
- * 1. Published row in Supabase (when configured), with Storage-backed media
- * 2. Hard-coded Phase 2 demo fallback (local /public/demo media)
+ * Only published Supabase rows are public. Drafts stay owner-only.
  */
 export async function getSiteBySlug(slug: string): Promise<ResolvedSite | undefined> {
-  const fromSupabase = await getPublishedSiteFromSupabase(slug);
-  if (fromSupabase) {
-    return fromSupabase;
-  }
-
-  return getDemoSite(slug);
+  return getPublishedSiteFromSupabase(slug);
 }
 
+/** No static demo slugs — public sites come from published Supabase rows. */
 export function listKnownSiteSlugs(): string[] {
-  return listDemoSiteSlugs();
+  return [];
 }
 
 async function getPublishedSiteFromSupabase(
@@ -73,17 +69,17 @@ async function getPublishedSiteFromSupabase(
     "id" | "storage_path" | "type" | "description"
   >[];
 
-  const fromStorage = mediaRowsToAssets(mediaRows, supabaseUrl);
-
-  // Keep demo assets as a fallback for seeded configs that still use demo IDs.
-  const mediaById: Record<string, MediaAsset> = {
-    ...demoMediaById,
-    ...fromStorage,
-  };
-
+  const mediaById = await mediaRowsToSignedAssets(
+    supabase,
+    mediaRows,
+    supabaseUrl,
+  );
   return {
     slug: row.slug,
-    config,
+    config: ensureSectionMediaIds(
+      config,
+      mediaRows.map((mediaRow) => mediaRow.id),
+    ),
     mediaById,
   };
 }

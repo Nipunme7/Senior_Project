@@ -6,9 +6,9 @@ This repository contains the Next.js frontend, FastAPI backend, tests, CI, and p
 
 ## Current phase
 
-Phase 8: Gemini full-site generation (`POST /v1/sites/generate`) on the FastAPI backend.
+Owner AI prototype: login → brief → media → Gemini generate → preview → publish.
 
-Still later: section editing, publish UX, subdomains.
+Still later: section editing, subdomains.
 
 ## Run the frontend
 
@@ -20,8 +20,11 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-- [http://localhost:3000/site/barber](http://localhost:3000/site/barber) — Elite Cuts
-- [http://localhost:3000/site/cafe](http://localhost:3000/site/cafe) — Everest Coffee
+- [http://localhost:3000/owner/login](http://localhost:3000/owner/login) — sign in
+- [http://localhost:3000/owner/create](http://localhost:3000/owner/create) — create / generate
+- [http://localhost:3000/site/your-slug](http://localhost:3000/site/your-slug) — published public site
+
+Run FastAPI locally as well (`cd backend && uvicorn main:app --reload --port 8000`) and set `NEXT_PUBLIC_API_URL=http://localhost:8000`.
 
 ## Run the backend
 
