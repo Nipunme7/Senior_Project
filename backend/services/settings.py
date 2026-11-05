@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str | None = None
     cors_origins: str = "http://localhost:3000"
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-3.8-flash"
 
     @field_validator(
         "supabase_url",

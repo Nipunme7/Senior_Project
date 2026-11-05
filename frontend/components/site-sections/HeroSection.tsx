@@ -3,14 +3,12 @@ import { firstImage, firstVideo } from "@/lib/media";
 import type { SectionComponentProps } from "@/components/site-sections/section-props";
 
 function HeroCopy({
-  kicker,
   headline,
   subheadline,
   ctaLabel,
   ctaHref,
   align = "center",
 }: {
-  kicker: string;
   headline: string;
   subheadline?: string;
   ctaLabel?: string;
@@ -19,9 +17,6 @@ function HeroCopy({
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-xl text-left"}>
-      <p className="mb-4 text-xs font-medium uppercase tracking-[0.35em] text-[var(--site-accent)]">
-        {kicker}
-      </p>
       <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[#f7f3ea] sm:text-5xl lg:text-7xl">
         {headline}
       </h1>
@@ -59,17 +54,14 @@ export function HeroSection({
   variant,
   props,
   media,
-  theme,
 }: SectionComponentProps<HeroSectionConfig>) {
   const image = firstImage(media);
   const video = firstVideo(media);
-  const kicker = theme.style === "ai-choose" ? "Featured" : theme.style;
   const ctaHref = props.ctaLabel ? (props.ctaHref ?? "#services_01") : undefined;
   const isSplit = variant === "split-left" || variant === "split-right";
 
   const copy = (
     <HeroCopy
-      kicker={kicker}
       headline={props.headline}
       subheadline={props.subheadline}
       ctaLabel={props.ctaLabel}

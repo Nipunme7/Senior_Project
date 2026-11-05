@@ -16,7 +16,8 @@ TEST_JWT_SECRET = "test-secret-at-least-32-bytes-long!!"
 
 
 def test_create_site_with_token_without_jwt_secret(client, monkeypatch):
-    monkeypatch.delenv("SUPABASE_JWT_SECRET", raising=False)
+    # Empty string overrides backend/.env so local secrets do not leak into tests.
+    monkeypatch.setenv("SUPABASE_JWT_SECRET", "")
     from services.settings import get_settings
 
     get_settings.cache_clear()

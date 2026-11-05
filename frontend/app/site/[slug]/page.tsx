@@ -6,6 +6,10 @@ interface SitePageProps {
   params: Promise<{ slug: string }>;
 }
 
+/** Published tenant sites are loaded from Supabase at request time. */
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+
 export function generateStaticParams() {
   return listKnownSiteSlugs().map((slug) => ({ slug }));
 }

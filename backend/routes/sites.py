@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ai.gemini_client import GeminiError
@@ -18,6 +20,7 @@ from services.settings import Settings, get_settings
 from services.sites import create_draft_site, get_published_site_by_slug
 from services.validation import ValidationError, summarize_config, validate_website_config
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/sites", tags=["sites"])
 
 
@@ -64,13 +67,17 @@ async def generate_site(
             contact=contact,
             style=body.style,
             media=media,
+            sections=body.sections,
+            inspiration_hint=body.inspirationHint,
         )
     except GeminiError as exc:
+        logger.warning("Gemini generate failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
         ) from exc
     except ValidationError as exc:
+        logger.warning("Generate validation failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc),

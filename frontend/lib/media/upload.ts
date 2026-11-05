@@ -94,3 +94,73 @@ export async function listSiteMedia(
 
   return (data ?? []) as MediaRow[];
 }
+
+/**
+ * Delete a media row and its Storage object.
+ * Also strips the media ID from the site's WebsiteConfig sections when present.
+ */
+export async function deleteSiteMedia(
+  supabase: SupabaseClient,
+  media: Pick<MediaRow, "id" | "site_id" | "storage_path">,
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from("media")
+    .delete()
+    .eq("id", media.id)
+    .eq("site_id", media.site_id);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  const { error: storageError } = await supabase.storage
+    .from(SITE_MEDIA_BUCKET)
+    .remove([media.storage_path]);
+
+  if (storageError) {
+    // Row is already gone; surface storage failure so the owner can retry cleanup.
+    throw new Error(
+      `Media record deleted, but storage cleanup failed: ${storageError.message}`,
+    );
+  }
+
+  const { data: site, error: siteError } = await supabase
+    .from("sites")
+    .select("id, site_config")
+    .eq("id", media.site_id)
+    .maybeSingle();
+
+  if (siteError || !site) {
+    return;
+  }
+
+  const config = site.site_config as {
+    sections?: Array<{ mediaIds?: string[] | null }>;
+  } | null;
+
+  if (!config || !Array.isArray(config.sections)) {
+    return;
+  }
+
+  let changed = false;
+  const sections = config.sections.map((section) => {
+    if (!Array.isArray(section.mediaIds) || !section.mediaIds.includes(media.id)) {
+      return section;
+    }
+    changed = true;
+    const nextIds = section.mediaIds.filter((id) => id !== media.id);
+    return {
+      ...section,
+      mediaIds: nextIds.length > 0 ? nextIds : undefined,
+    };
+  });
+
+  if (!changed) {
+    return;
+  }
+
+  await supabase
+    .from("sites")
+    .update({ site_config: { ...config, sections } })
+    .eq("id", media.site_id);
+}

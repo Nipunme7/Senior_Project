@@ -3,27 +3,29 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
+import { OwnerTopBar } from "@/components/owner/OwnerTopBar";
 import { mediaRowsToAssets } from "@/lib/media/resolve-rows";
-import { listSiteMedia, uploadSiteMedia } from "@/lib/media/upload";
-import { createOwnerSite, listOwnedSites } from "@/lib/sites/owner-sites";
+import {
+  deleteSiteMedia,
+  listSiteMedia,
+  uploadSiteMedia,
+} from "@/lib/media/upload";
+import { listOwnedSites } from "@/lib/sites/owner-sites";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import type { MediaRow, SiteRow } from "@/lib/supabase/database.types";
 
 export default function OwnerMediaPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
   const [sites, setSites] = useState<SiteRow[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [media, setMedia] = useState<MediaRow[]>([]);
-  const [businessName, setBusinessName] = useState("");
-  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 
@@ -74,7 +76,6 @@ export default function OwnerMediaPage() {
         return;
       }
 
-      setUser(currentUser);
       try {
         await refreshSites(currentUser.id);
       } catch (err) {
@@ -118,29 +119,29 @@ export default function OwnerMediaPage() {
     };
   }, [selectedSiteId, refreshMedia]);
 
-  async function onCreateSite(event: FormEvent) {
-    event.preventDefault();
+  async function onDelete(row: MediaRow) {
     setError(null);
     setStatus(null);
-
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase || !user) {
-      setError("You must be signed in.");
+    const label = row.description || row.id;
+    if (!window.confirm(`Delete “${label}”? This cannot be undone.`)) {
       return;
     }
 
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setError("Supabase is not configured.");
+      return;
+    }
+
+    setDeletingId(row.id);
     try {
-      const site = await createOwnerSite(supabase, user.id, {
-        businessName,
-        slug,
-      });
-      setBusinessName("");
-      setSlug("");
-      setStatus(`Created site “${site.business_name}” (${site.slug}).`);
-      await refreshSites(user.id);
-      setSelectedSiteId(site.id);
+      await deleteSiteMedia(supabase, row);
+      setStatus(`Deleted “${label}”.`);
+      await refreshMedia(selectedSiteId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create site.");
+      setError(err instanceof Error ? err.message : "Delete failed.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -154,7 +155,7 @@ export default function OwnerMediaPage() {
       return;
     }
     if (!selectedSiteId) {
-      setError("Create or select a site first.");
+      setError("Select a site first, or create one in the builder.");
       return;
     }
 
@@ -189,178 +190,159 @@ export default function OwnerMediaPage() {
   }
 
   const assets = supabaseUrl ? mediaRowsToAssets(media, supabaseUrl) : {};
+  const selectedSite = sites.find((item) => item.id === selectedSiteId) ?? null;
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#111111] px-6 py-20 text-[#f4f1ea]">
-        <p className="text-sm text-[#cfc9bb]">Loading owner media…</p>
+      <main className="owner-shell">
+        <p className="text-sm owner-muted-text">Loading media library…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#111111] px-6 py-16 text-[#f4f1ea]">
-      <div className="mx-auto max-w-3xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#C9A45C]">
-              Phase 6
-            </p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl">
-              Site media
-            </h1>
-            <p className="mt-3 max-w-xl text-sm text-[#cfc9bb]">
-              Upload images or small videos to Supabase Storage. The app stores a
-              media row and exposes a stable media ID for WebsiteConfig.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void onSignOut()}
-            className="text-sm text-[#cfc9bb] underline"
-          >
-            Sign out
-          </button>
-        </div>
+    <main className="owner-shell">
+      <div className="relative mx-auto max-w-5xl">
+        <OwnerTopBar active="media" onSignOut={() => void onSignOut()} />
 
-        <section className="mt-12 border border-white/15 p-6">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">
-            Your sites
-          </h2>
-          {sites.length === 0 ? (
-            <p className="mt-3 text-sm text-[#cfc9bb]">
-              No sites yet. Create one below, then upload media.
-            </p>
-          ) : (
-            <label className="mt-4 block text-sm">
-              <span className="text-[#cfc9bb]">Selected site</span>
-              <select
-                value={selectedSiteId}
-                onChange={(event) => setSelectedSiteId(event.target.value)}
-                className="mt-2 w-full border border-white/20 bg-[#111111] px-3 py-2"
-              >
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.business_name} ({site.slug}) — {site.status}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          <form onSubmit={onCreateSite} className="mt-6 grid gap-3 sm:grid-cols-2">
-            <label className="block text-sm sm:col-span-1">
-              <span className="text-[#cfc9bb]">Business name</span>
-              <input
-                value={businessName}
-                onChange={(event) => setBusinessName(event.target.value)}
-                required
-                className="mt-2 w-full border border-white/20 bg-transparent px-3 py-2"
-              />
-            </label>
-            <label className="block text-sm sm:col-span-1">
-              <span className="text-[#cfc9bb]">Slug</span>
-              <input
-                value={slug}
-                onChange={(event) => setSlug(event.target.value)}
-                required
-                placeholder="my-shop"
-                className="mt-2 w-full border border-white/20 bg-transparent px-3 py-2"
-              />
-            </label>
-            <button
-              type="submit"
-              className="sm:col-span-2 border border-white/25 px-4 py-3 text-sm uppercase tracking-[0.16em] hover:border-[#C9A45C]"
-            >
-              Create draft site
-            </button>
-          </form>
-        </section>
-
-        <section className="mt-8 border border-white/15 p-6">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">
-            Upload
-          </h2>
-          <p className="mt-2 text-sm text-[#cfc9bb]">
-            Images up to 5MB (JPEG/PNG/WebP/GIF). Videos up to 20MB (MP4/WebM),
-            max 3 per site.
-          </p>
-          <form onSubmit={onUpload} className="mt-6 space-y-4">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-[#cfc9bb]"
-            />
-            <label className="block text-sm">
-              <span className="text-[#cfc9bb]">Description / alt text</span>
-              <input
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                className="mt-2 w-full border border-white/20 bg-transparent px-3 py-2"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={uploading || !selectedSiteId}
-              className="border border-[#C9A45C] px-4 py-3 text-sm uppercase tracking-[0.18em] text-[#C9A45C] hover:bg-[#C9A45C] hover:text-[#111111] disabled:opacity-50"
-            >
-              {uploading ? "Uploading…" : "Upload media"}
-            </button>
-          </form>
-        </section>
-
-        <section className="mt-8 border border-white/15 p-6">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">
+        <header className="mt-10 max-w-2xl">
+          <h1 className="owner-heading text-4xl tracking-tight sm:text-5xl">
             Media library
-          </h2>
-          {media.length === 0 ? (
-            <p className="mt-3 text-sm text-[#cfc9bb]">No media for this site yet.</p>
-          ) : (
-            <ul className="mt-6 space-y-4">
-              {media.map((row) => {
-                const asset = assets[row.id];
-                return (
-                  <li
-                    key={row.id}
-                    className="flex flex-col gap-3 border border-white/10 p-4 sm:flex-row sm:items-center"
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed owner-muted-text">
+            Upload photos and video for sites you already created in the builder.
+          </p>
+        </header>
+
+        {sites.length === 0 ? (
+          <section className="owner-panel mt-10 max-w-xl space-y-4">
+            <h2 className="owner-heading text-2xl">No sites yet</h2>
+            <p className="text-sm owner-muted-text">
+              Create a draft in the builder first. Media uploads attach to that
+              site.
+            </p>
+            <Link href="/owner/create" className="owner-btn-primary">
+              Open builder
+            </Link>
+          </section>
+        ) : (
+          <>
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              <section className="owner-panel space-y-5">
+                <h2 className="owner-heading text-2xl">Site</h2>
+                <label className="owner-label">
+                  Selected site
+                  <select
+                    value={selectedSiteId}
+                    onChange={(event) => setSelectedSiteId(event.target.value)}
+                    className="owner-input mt-2"
                   >
-                    {asset?.type === "image" ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={asset.url}
-                        alt={asset.alt}
-                        className="h-20 w-28 object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-20 w-28 items-center justify-center border border-white/15 text-xs uppercase tracking-wider text-[#cfc9bb]">
-                        Video
-                      </div>
-                    )}
-                    <div className="min-w-0 text-sm">
-                      <p className="truncate font-mono text-[#C9A45C]">{row.id}</p>
-                      <p className="mt-1 text-[#cfc9bb]">
-                        {row.type} · {row.description || "No description"}
-                      </p>
-                      <p className="mt-1 truncate text-xs text-white/50">
-                        {row.storage_path}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+                    {sites.map((site) => (
+                      <option key={site.id} value={site.id}>
+                        {site.business_name} ({site.slug}) — {site.status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {selectedSite ? (
+                  <p className="text-sm owner-muted-text">
+                    Working on{" "}
+                    <span className="font-medium text-slate-900">
+                      {selectedSite.business_name}
+                    </span>{" "}
+                    · /site/{selectedSite.slug}
+                  </p>
+                ) : null}
+                <Link href="/owner/create" className="owner-link text-sm">
+                  Back to builder
+                </Link>
+              </section>
 
-        {error ? <p className="mt-6 text-sm text-red-300">{error}</p> : null}
-        {status ? <p className="mt-6 text-sm text-[#C9A45C]">{status}</p> : null}
+              <section className="owner-panel space-y-5">
+                <div>
+                  <h2 className="owner-heading text-2xl">Upload</h2>
+                  <p className="mt-2 text-sm owner-muted-text">
+                    Images up to 5MB. Videos up to 20MB, max 3 per site.
+                  </p>
+                </div>
+                <form onSubmit={onUpload} className="space-y-4">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+                    onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                    className="block w-full text-sm owner-muted-text"
+                  />
+                  <label className="owner-label">
+                    Description / alt text
+                    <input
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      className="owner-input mt-2"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={uploading || !selectedSiteId}
+                    className="owner-btn-primary"
+                  >
+                    {uploading ? "Uploading…" : "Upload media"}
+                  </button>
+                </form>
+              </section>
+            </div>
 
-        <p className="mt-10 text-sm">
-          <Link href="/" className="text-[#C9A45C] underline">
-            Back home
-          </Link>
-        </p>
+            <section className="owner-panel mt-6">
+              <h2 className="owner-heading text-2xl">Files</h2>
+              {media.length === 0 ? (
+                <p className="mt-3 text-sm owner-muted-text">
+                  No media for this site yet.
+                </p>
+              ) : (
+                <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {media.map((row) => {
+                    const asset = assets[row.id];
+                    return (
+                      <li
+                        key={row.id}
+                        className="flex items-center gap-4 border border-[#e2e8f0] p-3"
+                      >
+                        {asset?.type === "image" ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={asset.url}
+                            alt={asset.alt}
+                            className="h-16 w-24 object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-24 items-center justify-center border border-[#e2e8f0] text-[10px] uppercase tracking-wider text-[#64748b]">
+                            Video
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1 text-sm">
+                          <p className="truncate text-[#0f766e]">
+                            {row.description || row.id}
+                          </p>
+                          <p className="mt-1 text-xs text-[#64748b]">{row.type}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void onDelete(row)}
+                          disabled={deletingId === row.id}
+                          className="shrink-0 text-xs font-medium text-red-700 underline underline-offset-2 disabled:opacity-50"
+                        >
+                          {deletingId === row.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+          </>
+        )}
+
+        {error ? <p className="owner-alert-error mt-6">{error}</p> : null}
+        {status ? <p className="owner-alert-ok mt-6">{status}</p> : null}
       </div>
     </main>
   );

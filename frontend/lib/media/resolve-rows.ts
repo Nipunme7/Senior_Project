@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { SITE_MEDIA_BUCKET } from "@/lib/media/constants";
 import type { MediaRow } from "@/lib/supabase/database.types";
 import type { MediaAsset } from "@/lib/types/website-config";
@@ -30,6 +31,44 @@ export function mediaRowsToAssets(
       alt: row.description?.trim() || "Site media",
     };
   }
+
+  return byId;
+}
+
+/**
+ * Prefer signed Storage URLs so images load even when the bucket is private.
+ * Falls back to public URLs if signing fails.
+ */
+export async function mediaRowsToSignedAssets(
+  supabase: SupabaseClient,
+  rows: Pick<MediaRow, "id" | "storage_path" | "type" | "description">[],
+  supabaseUrl: string,
+  expiresInSeconds = 60 * 60 * 24,
+): Promise<Record<string, MediaAsset>> {
+  const byId: Record<string, MediaAsset> = {};
+
+  await Promise.all(
+    rows.map(async (row) => {
+      let url = publicMediaUrl(supabaseUrl, row.storage_path);
+      try {
+        const { data, error } = await supabase.storage
+          .from(SITE_MEDIA_BUCKET)
+          .createSignedUrl(row.storage_path, expiresInSeconds);
+        if (!error && data?.signedUrl) {
+          url = data.signedUrl;
+        }
+      } catch {
+        // keep public URL fallback
+      }
+
+      byId[row.id] = {
+        id: row.id,
+        type: row.type,
+        url,
+        alt: row.description?.trim() || "Site media",
+      };
+    }),
+  );
 
   return byId;
 }

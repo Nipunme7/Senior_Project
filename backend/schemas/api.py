@@ -78,6 +78,8 @@ class GenerateSiteRequest(BaseModel):
     services: list[str] | None = None
     contact: GenerateContactInfo | None = None
     style: str | None = None
+    inspirationHint: str | None = None
+    sections: list[str] | None = None
     media: list[GenerateMediaItem] | None = None
     slug: str | None = Field(
         default=None,
