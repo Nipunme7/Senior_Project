@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   MEDIA_SECTION_TYPES,
   VARIANTS_BY_TYPE,
@@ -23,6 +23,10 @@ interface SectionEditorProps {
   onDraftChange?: (section: SiteSection) => void;
 }
 
+/**
+ * Local draft state is initialized from `section`.
+ * Parents remount this editor with `key={section.id}` when switching sections.
+ */
 export function SectionEditor({
   section,
   mediaById,
@@ -32,11 +36,6 @@ export function SectionEditor({
   onDraftChange,
 }: SectionEditorProps) {
   const [draft, setDraft] = useState<SiteSection>(section);
-
-  // Only reset local draft when switching sections — not on every live preview update.
-  useEffect(() => {
-    setDraft(section);
-  }, [section.id]);
 
   const variants = VARIANTS_BY_TYPE[draft.type];
   const showMedia = MEDIA_SECTION_TYPES.has(draft.type);
