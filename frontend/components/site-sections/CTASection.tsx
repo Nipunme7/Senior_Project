@@ -18,10 +18,10 @@ function CtaContent({
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-xl"}>
-      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[#f7f3ea] sm:text-5xl">
+      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--site-secondary)] sm:text-5xl">
         {heading}
       </h2>
-      {body ? <p className="mt-4 text-base leading-relaxed text-[#d9d4c8]">{body}</p> : null}
+      {body ? <p className="mt-4 text-base leading-relaxed text-[var(--site-secondary)]/70">{body}</p> : null}
       {ctaLabel && ctaHref ? (
         <a
           href={ctaHref}

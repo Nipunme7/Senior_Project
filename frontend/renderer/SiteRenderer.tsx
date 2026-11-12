@@ -15,6 +15,7 @@ export interface SiteRendererProps {
  */
 export function SiteRenderer({ config, mediaById }: SiteRendererProps) {
   const { theme } = config;
+  const secondaryColor = theme.secondaryColor ?? "#F4EFE7";
 
   return (
     <div
@@ -24,8 +25,9 @@ export function SiteRenderer({ config, mediaById }: SiteRendererProps) {
       style={
         {
           backgroundColor: theme.primaryColor,
-          color: "#f4f1ea",
+          color: secondaryColor,
           "--site-primary": theme.primaryColor,
+          "--site-secondary": secondaryColor,
           "--site-accent": theme.accentColor,
         } as CSSProperties
       }

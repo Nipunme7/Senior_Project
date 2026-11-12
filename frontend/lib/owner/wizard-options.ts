@@ -120,7 +120,149 @@ export const DEFAULT_SECTION_TYPES: SectionType[] = [
 export type BrandColorCount = 1 | 2 | 3;
 
 /** Starter swatches when the owner bumps count up — freely overridable. */
-export const DEFAULT_BRAND_COLORS = ["#111111", "#C9A45C", "#0f766e"] as const;
+export const DEFAULT_BRAND_COLORS = ["#171615", "#F4EFE7", "#C4A579"] as const;
+
+export type StylePaletteId =
+  | "noirChampagne"
+  | "atelierIvory"
+  | "heritageForest"
+  | "wineParchment"
+  | "boardroomNavy"
+  | "graphiteSilver"
+  | "olivePaper"
+  | "executiveTeal"
+  | "inkOnBone"
+  | "fogStudio"
+  | "warmAsh"
+  | "monochromeEditorial"
+  | "irisStudio"
+  | "cobaltStudio"
+  | "digitalMint"
+  | "terracottaFuture";
+
+export interface StyleColorPalette {
+  id: StylePaletteId;
+  style: DesignStyle;
+  label: string;
+  /** [background, ink/text, accent] */
+  colors: [string, string, string];
+}
+
+/**
+ * Curated 3-color templates per design style.
+ * Applied on generate unless the owner chooses custom colors.
+ */
+export const STYLE_COLOR_PALETTES: StyleColorPalette[] = [
+  {
+    id: "noirChampagne",
+    style: "luxury",
+    label: "Noir champagne",
+    colors: ["#171615", "#F4EFE7", "#C4A579"],
+  },
+  {
+    id: "atelierIvory",
+    style: "luxury",
+    label: "Atelier ivory",
+    colors: ["#F5F0E7", "#25201C", "#7A5A42"],
+  },
+  {
+    id: "heritageForest",
+    style: "luxury",
+    label: "Heritage forest",
+    colors: ["#142D26", "#F6F1E8", "#C1A46C"],
+  },
+  {
+    id: "wineParchment",
+    style: "luxury",
+    label: "Wine parchment",
+    colors: ["#F5EDE7", "#4C2632", "#8E484E"],
+  },
+  {
+    id: "boardroomNavy",
+    style: "professional",
+    label: "Boardroom navy",
+    colors: ["#F5F7F8", "#172A3A", "#305779"],
+  },
+  {
+    id: "graphiteSilver",
+    style: "professional",
+    label: "Graphite silver",
+    colors: ["#222831", "#F5F3EF", "#AFC1CE"],
+  },
+  {
+    id: "olivePaper",
+    style: "professional",
+    label: "Olive paper",
+    colors: ["#F7F5F0", "#283B33", "#536A58"],
+  },
+  {
+    id: "executiveTeal",
+    style: "professional",
+    label: "Executive teal",
+    colors: ["#0E343D", "#F3F6F5", "#8BC1B2"],
+  },
+  {
+    id: "inkOnBone",
+    style: "minimal",
+    label: "Ink on bone",
+    colors: ["#FAF8F4", "#252421", "#796B59"],
+  },
+  {
+    id: "fogStudio",
+    style: "minimal",
+    label: "Fog studio",
+    colors: ["#EFF0EE", "#303536", "#5C716A"],
+  },
+  {
+    id: "warmAsh",
+    style: "minimal",
+    label: "Warm ash",
+    colors: ["#EAE5DF", "#352F2C", "#755845"],
+  },
+  {
+    id: "monochromeEditorial",
+    style: "minimal",
+    label: "Monochrome editorial",
+    colors: ["#1C1D1E", "#F5F5F1", "#A5A8AA"],
+  },
+  {
+    id: "irisStudio",
+    style: "modern",
+    label: "Iris studio",
+    colors: ["#14131C", "#F8F7FC", "#A998FF"],
+  },
+  {
+    id: "cobaltStudio",
+    style: "modern",
+    label: "Cobalt studio",
+    colors: ["#F7F9FC", "#172B4D", "#4165BD"],
+  },
+  {
+    id: "digitalMint",
+    style: "modern",
+    label: "Digital mint",
+    colors: ["#0D2021", "#EEF9F3", "#63C5A4"],
+  },
+  {
+    id: "terracottaFuture",
+    style: "modern",
+    label: "Terracotta future",
+    colors: ["#F5F1EB", "#282D2A", "#A44935"],
+  },
+];
+
+export function palettesForStyle(style: DesignStyle): StyleColorPalette[] {
+  const matched = STYLE_COLOR_PALETTES.filter((palette) => palette.style === style);
+  return matched.length ? matched : STYLE_COLOR_PALETTES.filter((p) => p.style === "modern");
+}
+
+export function defaultPaletteForStyle(style: DesignStyle): StyleColorPalette {
+  return palettesForStyle(style)[0];
+}
+
+export function getStylePaletteById(id: string): StyleColorPalette | undefined {
+  return STYLE_COLOR_PALETTES.find((palette) => palette.id === id);
+}
 
 export function normalizeHexColor(value: string, fallback = "#111111"): string {
   const trimmed = value.trim();
@@ -147,6 +289,10 @@ export function deriveAccentColor(primary: string): string {
   return hexLuminance(primary) < 0.45 ? "#c9a45c" : "#111111";
 }
 
+export function deriveSecondaryColor(primary: string): string {
+  return hexLuminance(primary) < 0.45 ? "#f4efe7" : "#171615";
+}
+
 export function normalizeBrandColors(
   count: BrandColorCount,
   colors: string[],
@@ -164,11 +310,12 @@ export function normalizeBrandColors(
 }
 
 /**
- * Map 1–3 owner picks onto WebsiteConfig.theme (primary + accent only).
- * Triple: base + mid preference + highlight → primary = first, accent = third.
+ * Map 1–3 owner picks onto WebsiteConfig.theme.
+ * Triple (preferred): [background, ink, accent].
  */
 export function themeColorsFromBrand(colors: string[]): {
   primaryColor: string;
+  secondaryColor: string;
   accentColor: string;
 } {
   const normalized = colors.map((color, index) =>
@@ -176,23 +323,44 @@ export function themeColorsFromBrand(colors: string[]): {
   );
   if (normalized.length <= 1) {
     const primaryColor = normalized[0] ?? DEFAULT_BRAND_COLORS[0];
-    return { primaryColor, accentColor: deriveAccentColor(primaryColor) };
+    return {
+      primaryColor,
+      secondaryColor: deriveSecondaryColor(primaryColor),
+      accentColor: deriveAccentColor(primaryColor),
+    };
   }
   if (normalized.length === 2) {
-    return { primaryColor: normalized[0], accentColor: normalized[1] };
+    return {
+      primaryColor: normalized[0],
+      secondaryColor: deriveSecondaryColor(normalized[0]),
+      accentColor: normalized[1],
+    };
   }
-  return { primaryColor: normalized[0], accentColor: normalized[2] };
+  return {
+    primaryColor: normalized[0],
+    secondaryColor: normalized[1],
+    accentColor: normalized[2],
+  };
 }
 
 export function withThemeColors<
-  T extends { theme: { style: string; primaryColor: string; accentColor: string } },
+  T extends {
+    theme: {
+      style: string;
+      primaryColor: string;
+      secondaryColor?: string;
+      accentColor: string;
+    };
+  },
 >(config: T, colors: string[]): T {
-  const { primaryColor, accentColor } = themeColorsFromBrand(colors);
+  const { primaryColor, secondaryColor, accentColor } =
+    themeColorsFromBrand(colors);
   return {
     ...config,
     theme: {
       ...config.theme,
       primaryColor,
+      secondaryColor,
       accentColor,
     },
   };

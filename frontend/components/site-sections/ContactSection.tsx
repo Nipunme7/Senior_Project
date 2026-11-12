@@ -18,14 +18,14 @@ function ContactDetails({
       {address ? (
         <div>
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]">Address</dt>
-          <dd className="mt-2 whitespace-pre-line text-[#f7f3ea]">{address}</dd>
+          <dd className="mt-2 whitespace-pre-line text-[var(--site-secondary)]">{address}</dd>
         </div>
       ) : null}
       {phone ? (
         <div>
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]">Phone</dt>
           <dd className="mt-2">
-            <a href={`tel:${phone}`} className="text-[#f7f3ea]">
+            <a href={`tel:${phone}`} className="text-[var(--site-secondary)]">
               {phone}
             </a>
           </dd>
@@ -35,7 +35,7 @@ function ContactDetails({
         <div>
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]">Email</dt>
           <dd className="mt-2">
-            <a href={`mailto:${email}`} className="text-[#f7f3ea]">
+            <a href={`mailto:${email}`} className="text-[var(--site-secondary)]">
               {email}
             </a>
           </dd>
@@ -44,7 +44,7 @@ function ContactDetails({
       {hours ? (
         <div>
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]">Hours</dt>
-          <dd className="mt-2 whitespace-pre-line text-[#f7f3ea]">{hours}</dd>
+          <dd className="mt-2 whitespace-pre-line text-[var(--site-secondary)]">{hours}</dd>
         </div>
       ) : null}
     </dl>
@@ -101,7 +101,7 @@ export function ContactSection({
                 Name
                 <input
                   name="name"
-                  className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-[#f7f3ea]"
+                  className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-[var(--site-secondary)]"
                 />
               </label>
               <label className="block text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]">
@@ -109,7 +109,7 @@ export function ContactSection({
                 <textarea
                   name="message"
                   rows={5}
-                  className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-[#f7f3ea]"
+                  className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-[var(--site-secondary)]"
                 />
               </label>
               <button

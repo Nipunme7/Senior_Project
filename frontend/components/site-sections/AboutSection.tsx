@@ -10,7 +10,7 @@ function AboutCopy({ heading, body }: { heading: string; body: string }) {
       <p className="mb-3 text-xs uppercase tracking-[0.35em] text-[var(--site-accent)]">
         About
       </p>
-      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[#f7f3ea] sm:text-4xl">
+      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--site-secondary)] sm:text-4xl">
         {heading}
       </h2>
       <p className="mt-6 whitespace-pre-line text-base leading-relaxed text-[#cfc9bb]">

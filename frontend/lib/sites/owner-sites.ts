@@ -66,8 +66,9 @@ export async function createOwnerSite(
         siteName: businessName,
         theme: {
           style: input.style ?? "modern",
-          primaryColor: "#111111",
-          accentColor: "#C9A45C",
+          primaryColor: "#171615",
+          secondaryColor: "#F4EFE7",
+          accentColor: "#C4A579",
         },
         sections: [
           {

@@ -18,7 +18,7 @@ export function PricingSection({
           {items.map((item) => (
             <li key={item.name} className="flex items-baseline justify-between gap-6 py-6">
               <div>
-                <h3 className="text-lg text-[#f7f3ea]">{item.name}</h3>
+                <h3 className="text-lg text-[var(--site-secondary)]">{item.name}</h3>
                 {item.description ? (
                   <p className="mt-1 text-sm text-[#cfc9bb]">{item.description}</p>
                 ) : null}
@@ -42,7 +42,7 @@ export function PricingSection({
             key={item.name}
             className="border border-white/10 bg-white/5 p-8 text-center"
           >
-            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[#f7f3ea]">
+            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--site-secondary)]">
               {item.name}
             </h3>
             <p className="mt-4 text-3xl text-[var(--site-accent)]">{item.price}</p>
@@ -50,7 +50,7 @@ export function PricingSection({
               <p className="mt-4 text-sm text-[#cfc9bb]">{item.description}</p>
             ) : null}
             {item.features && item.features.length > 0 ? (
-              <ul className="mt-8 space-y-2 text-sm text-[#d9d4c8]">
+              <ul className="mt-8 space-y-2 text-sm text-[var(--site-secondary)]/70">
                 {item.features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}

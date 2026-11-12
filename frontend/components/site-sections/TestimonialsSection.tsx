@@ -21,7 +21,7 @@ export function TestimonialsSection({
       <section id={id} className="mx-auto max-w-4xl px-6 py-24 text-center">
         <SectionHeading kicker="Testimonials" heading={heading} />
         <blockquote>
-          <p className="font-[family-name:var(--font-display)] text-2xl leading-relaxed text-[#f7f3ea] sm:text-4xl">
+          <p className="font-[family-name:var(--font-display)] text-2xl leading-relaxed text-[var(--site-secondary)] sm:text-4xl">
             “{featured.quote}”
           </p>
           <footer className="mt-8 text-sm uppercase tracking-[0.2em] text-[var(--site-accent)]">
@@ -51,7 +51,7 @@ export function TestimonialsSection({
       <div className="grid gap-6 md:grid-cols-3">
         {items.map((item) => (
           <blockquote key={item.name} className="border border-white/10 bg-white/5 p-8">
-            <p className="text-base leading-relaxed text-[#f7f3ea]">“{item.quote}”</p>
+            <p className="text-base leading-relaxed text-[var(--site-secondary)]">“{item.quote}”</p>
             <footer className="mt-6 text-xs uppercase tracking-[0.18em] text-[var(--site-accent)]">
               {item.name}
               {item.role ? ` · ${item.role}` : ""}
