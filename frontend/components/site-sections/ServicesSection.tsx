@@ -7,7 +7,7 @@ function SectionHeading({ heading }: { heading: string }) {
       <p className="mb-3 text-xs uppercase tracking-[0.35em] text-[var(--site-accent)]">
         Offerings
       </p>
-      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[#f7f3ea] sm:text-5xl">
+      <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--site-secondary)] sm:text-5xl">
         {heading}
       </h2>
     </div>
@@ -33,7 +33,7 @@ export function ServicesSection({
               className="flex flex-col gap-2 py-8 sm:flex-row sm:items-baseline sm:justify-between"
             >
               <div>
-                <h3 className="text-xl text-[#f7f3ea]">{item.name}</h3>
+                <h3 className="text-xl text-[var(--site-secondary)]">{item.name}</h3>
                 {item.description ? (
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#cfc9bb]">
                     {item.description}
@@ -62,7 +62,7 @@ export function ServicesSection({
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-[var(--site-accent)] text-lg tracking-[0.2em] text-[var(--site-accent)]">
                 {item.name.slice(0, 1)}
               </div>
-              <h3 className="text-xl text-[#f7f3ea]">{item.name}</h3>
+              <h3 className="text-xl text-[var(--site-secondary)]">{item.name}</h3>
               {item.description ? (
                 <p className="mt-3 text-sm leading-relaxed text-[#cfc9bb]">{item.description}</p>
               ) : null}
@@ -85,7 +85,7 @@ export function ServicesSection({
             key={item.name}
             className="border border-white/10 bg-white/5 p-8 transition hover:border-[var(--site-accent)]"
           >
-            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[#f7f3ea]">
+            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--site-secondary)]">
               {item.name}
             </h3>
             {item.description ? (

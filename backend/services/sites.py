@@ -47,6 +47,7 @@ def build_default_config(business_name: str, style: str | None) -> WebsiteConfig
             "theme": {
                 "style": resolved_style,
                 "primaryColor": "#111111",
+                "secondaryColor": "#F4F1EA",
                 "accentColor": "#C9A45C",
             },
             "sections": [

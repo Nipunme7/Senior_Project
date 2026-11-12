@@ -17,6 +17,7 @@ class ThemeConfig(BaseModel):
         "ai-choose",
     ]
     primaryColor: str
+    secondaryColor: str = "#F4F1EA"
     accentColor: str
 
 

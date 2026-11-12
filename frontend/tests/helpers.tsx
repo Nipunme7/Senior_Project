@@ -7,6 +7,7 @@ import type { MediaAsset, SiteSection, ThemeConfig, WebsiteConfig } from "@/lib/
 export const testTheme: ThemeConfig = {
   style: "modern",
   primaryColor: "#111111",
+  secondaryColor: "#F4EFE7",
   accentColor: "#C9A45C",
 };
 

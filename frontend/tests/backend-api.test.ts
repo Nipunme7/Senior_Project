@@ -31,6 +31,7 @@ describe("backend API client", () => {
           theme: {
             style: "modern",
             primaryColor: "#111111",
+            secondaryColor: "#F4EFE7",
             accentColor: "#C9A45C",
           },
           sections: [

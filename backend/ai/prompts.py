@@ -66,7 +66,7 @@ def build_generation_prompt(
         ),
         "Keep all copy short (1 sentence max per field). Do not write long paragraphs.",
         (
-            "Root keys: siteName, theme{style,primaryColor,accentColor}, "
+            "Root keys: siteName, theme{style,primaryColor,secondaryColor,accentColor}, "
             "sections[{id,type,variant,props,mediaIds?}]."
         ),
         "",
@@ -98,6 +98,10 @@ def build_generation_prompt(
             'No "highly recommend this establishment".'
         ),
         "About/services: say what they actually do. Skip filler adjectives.",
+        (
+            "Theme colors: primaryColor = page background, secondaryColor = main text/ink, "
+            "accentColor = highlights/CTAs. Prefer the owner-provided palette when given."
+        ),
         "",
         f"Business name: {business_name}",
     ]

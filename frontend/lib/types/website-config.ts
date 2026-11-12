@@ -73,7 +73,11 @@ export type FooterVariant = (typeof FOOTER_VARIANTS)[number];
 
 export interface ThemeConfig {
   style: DesignStyle;
+  /** Page / base surface */
   primaryColor: string;
+  /** Main text and contrast panels */
+  secondaryColor: string;
+  /** Highlights, CTAs, kickers */
   accentColor: string;
 }
 

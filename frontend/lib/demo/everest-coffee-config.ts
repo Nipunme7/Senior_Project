@@ -4,8 +4,9 @@ export const everestCoffeeConfig: WebsiteConfig = {
   siteName: "Everest Coffee",
   theme: {
     style: "minimal",
-    primaryColor: "#1F1710",
-    accentColor: "#D4A574",
+    primaryColor: "#FAF8F4",
+    secondaryColor: "#252421",
+    accentColor: "#796B59",
   },
   sections: [
     {

@@ -18,21 +18,25 @@ import {
   listSiteMedia,
   uploadSiteMedia,
 } from "@/lib/media/upload";
-import { BrandColorPicker } from "@/components/owner/BrandColorPicker";
+import {
+  BrandColorPicker,
+  type ColorMode,
+} from "@/components/owner/BrandColorPicker";
 import { OwnerTopBar } from "@/components/owner/OwnerTopBar";
 import { SectionEditor } from "@/components/owner/SectionEditor";
 import { SiteRenderer } from "@/renderer/SiteRenderer";
 import {
-  DEFAULT_BRAND_COLORS,
   DEFAULT_SECTION_TYPES,
   INSPIRATION_OPTIONS,
   SECTION_OPTIONS,
   brandColorsLabel,
+  defaultPaletteForStyle,
   normalizeBrandColors,
   normalizeHexColor,
   themeColorsFromBrand,
   withThemeColors,
   type BrandColorCount,
+  type StyleColorPalette,
 } from "@/lib/owner/wizard-options";
 import {
   createOwnerSite,
@@ -84,10 +88,14 @@ export default function OwnerCreatePage() {
   const [hours, setHours] = useState("");
 
   const [inspirationId, setInspirationId] = useState(INSPIRATION_OPTIONS[0].id);
-  const [brandColorCount, setBrandColorCount] = useState<BrandColorCount>(2);
-  const [brandColors, setBrandColors] = useState<string[]>(() =>
-    normalizeBrandColors(2, [...DEFAULT_BRAND_COLORS]),
+  const [colorMode, setColorMode] = useState<ColorMode>("palette");
+  const [paletteId, setPaletteId] = useState(
+    () => defaultPaletteForStyle(INSPIRATION_OPTIONS[0].style).id,
   );
+  const [brandColorCount, setBrandColorCount] = useState<BrandColorCount>(3);
+  const [brandColors, setBrandColors] = useState<string[]>(() => [
+    ...defaultPaletteForStyle(INSPIRATION_OPTIONS[0].style).colors,
+  ]);
   const [selectedSections, setSelectedSections] = useState<SectionType[]>([
     ...DEFAULT_SECTION_TYPES,
   ]);
@@ -115,15 +123,36 @@ export default function OwnerCreatePage() {
     [inspirationId],
   );
 
-  const normalizedBrandColors = useMemo(
-    () => normalizeBrandColors(brandColorCount, brandColors),
-    [brandColorCount, brandColors],
-  );
+  const activeColors = useMemo(() => {
+    if (colorMode === "custom") {
+      return normalizeBrandColors(brandColorCount, brandColors);
+    }
+    return [...(brandColors.length === 3
+      ? (brandColors as [string, string, string])
+      : defaultPaletteForStyle(inspiration.style).colors)];
+  }, [brandColorCount, brandColors, colorMode, inspiration.style]);
 
   const themeFromBrand = useMemo(
-    () => themeColorsFromBrand(normalizedBrandColors),
-    [normalizedBrandColors],
+    () => themeColorsFromBrand(activeColors),
+    [activeColors],
   );
+
+  function applyPalette(palette: StyleColorPalette) {
+    setColorMode("palette");
+    setPaletteId(palette.id);
+    setBrandColorCount(3);
+    setBrandColors([...palette.colors]);
+  }
+
+  function onInspirationChange(nextId: string) {
+    setInspirationId(nextId);
+    const nextInspiration =
+      INSPIRATION_OPTIONS.find((item) => item.id === nextId) ??
+      INSPIRATION_OPTIONS[0];
+    if (colorMode === "palette") {
+      applyPalette(defaultPaletteForStyle(nextInspiration.style));
+    }
+  }
 
   const refreshMedia = useCallback(async (siteId: string) => {
     const supabase = createBrowserSupabaseClient();
@@ -155,16 +184,24 @@ export default function OwnerCreatePage() {
       await refreshMedia(row.id);
       const existing = parseWebsiteConfig(row.site_config);
       if (existing) {
-        setBrandColorCount(2);
+        const secondary =
+          existing.theme.secondaryColor ??
+          (existing.theme.primaryColor ? "#F4EFE7" : "#F4EFE7");
+        setColorMode("custom");
+        setBrandColorCount(3);
         setBrandColors(
-          normalizeBrandColors(2, [
+          normalizeBrandColors(3, [
             existing.theme.primaryColor,
+            secondary,
             existing.theme.accentColor,
           ]),
         );
       } else {
-        setBrandColorCount(2);
-        setBrandColors(normalizeBrandColors(2, [...DEFAULT_BRAND_COLORS]));
+        const palette = defaultPaletteForStyle("luxury");
+        setColorMode("palette");
+        setPaletteId(palette.id);
+        setBrandColorCount(3);
+        setBrandColors([...palette.colors]);
       }
       if (existing && existing.sections.length > 1) {
         setEditConfig(existing);
@@ -195,8 +232,13 @@ export default function OwnerCreatePage() {
     setEmail("");
     setHours("");
     setInspirationId(INSPIRATION_OPTIONS[0].id);
-    setBrandColorCount(2);
-    setBrandColors(normalizeBrandColors(2, [...DEFAULT_BRAND_COLORS]));
+    {
+      const palette = defaultPaletteForStyle(INSPIRATION_OPTIONS[0].style);
+      setColorMode("palette");
+      setPaletteId(palette.id);
+      setBrandColorCount(3);
+      setBrandColors([...palette.colors]);
+    }
     setSelectedSections([...DEFAULT_SECTION_TYPES]);
     setFile(null);
     setMediaDescription("");
@@ -436,7 +478,7 @@ export default function OwnerCreatePage() {
         style: inspiration.style,
         inspirationHint: [
           inspiration.hint,
-          `Owner brand colors (${normalizedBrandColors.length}): ${normalizedBrandColors.join(", ")}.`,
+          `Owner brand colors (${activeColors.length}): background ${activeColors[0]}, ink ${activeColors[1] ?? ""}, accent ${activeColors[2] ?? activeColors[1] ?? ""}.`,
         ].join(" "),
         sections: selectedSections,
         contact: {
@@ -454,7 +496,7 @@ export default function OwnerCreatePage() {
         persist: false,
       });
 
-      const themedConfig = withThemeColors(result.config, normalizedBrandColors);
+      const themedConfig = withThemeColors(result.config, activeColors);
       const updated = await updateOwnerSiteConfig(
         supabase,
         draft.id,
@@ -520,11 +562,13 @@ export default function OwnerCreatePage() {
   }
 
   function onBrandCountChange(count: BrandColorCount) {
+    setColorMode("custom");
     setBrandColorCount(count);
     setBrandColors((current) => normalizeBrandColors(count, current));
   }
 
   function onBrandColorChange(index: number, color: string) {
+    setColorMode("custom");
     setBrandColors((current) => {
       const next = [...current];
       next[index] = color;
@@ -783,7 +827,7 @@ export default function OwnerCreatePage() {
                     <button
                       key={option.id}
                       type="button"
-                      onClick={() => setInspirationId(option.id)}
+                      onClick={() => onInspirationChange(option.id)}
                       className={`owner-choice overflow-hidden ${
                         selected ? "owner-choice-selected" : ""
                       }`}
@@ -814,13 +858,24 @@ export default function OwnerCreatePage() {
               <div className="mb-6 max-w-2xl">
                 <h2 className="owner-heading text-2xl">Brand colors</h2>
                 <p className="mt-2 text-sm owner-muted-text">
-                  What colors should the site use? Pick one, two, or three — any
-                  hex you want. We apply them as the site theme after generate.
+                  Each design style has curated three-color templates
+                  (background, ink, accent). Pick one, or switch to custom
+                  colors if you want full control.
                 </p>
               </div>
               <BrandColorPicker
+                style={inspiration.style}
+                mode={colorMode}
+                paletteId={paletteId}
                 count={brandColorCount}
                 colors={brandColors}
+                onModeChange={(mode) => {
+                  setColorMode(mode);
+                  if (mode === "palette") {
+                    applyPalette(defaultPaletteForStyle(inspiration.style));
+                  }
+                }}
+                onPaletteChange={applyPalette}
                 onCountChange={onBrandCountChange}
                 onColorChange={onBrandColorChange}
               />
@@ -989,7 +1044,11 @@ export default function OwnerCreatePage() {
                 <SummaryRow label="Look" value={inspiration.title} />
                 <SummaryRow
                   label="Colors"
-                  value={brandColorsLabel(normalizedBrandColors)}
+                  value={
+                    colorMode === "palette"
+                      ? `${paletteId} · ${brandColorsLabel(activeColors)}`
+                      : brandColorsLabel(activeColors)
+                  }
                 />
                 <SummaryRow
                   label="Sections"
@@ -1047,7 +1106,7 @@ export default function OwnerCreatePage() {
                 style={{ background: inspiration.swatch }}
               />
               <div className="flex h-12">
-                {brandColors.map((color, index) => (
+                {activeColors.map((color, index) => (
                   <div
                     key={index}
                     className="flex-1"
@@ -1067,11 +1126,11 @@ export default function OwnerCreatePage() {
                   Colors
                 </p>
                 <p className="mt-1 font-mono text-xs text-slate-900">
-                  {brandColors.join(" · ")}
+                  {activeColors.join(" · ")}
                 </p>
                 <p className="mt-1 text-[11px] owner-muted-text">
                   Theme uses {themeFromBrand.primaryColor} /{" "}
-                  {themeFromBrand.accentColor}
+                  {themeFromBrand.secondaryColor} / {themeFromBrand.accentColor}
                 </p>
               </div>
             </aside>

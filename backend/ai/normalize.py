@@ -8,6 +8,21 @@ from typing import Any
 
 from component_catalog.catalog import DESIGN_STYLES, VARIANTS_BY_TYPE
 
+def _hex_luminance(hex_color: str) -> float:
+    raw = hex_color.strip().lstrip("#")
+    if len(raw) == 3:
+        raw = "".join(ch * 2 for ch in raw)
+    if len(raw) != 6:
+        return 0.0
+    try:
+        r = int(raw[0:2], 16) / 255
+        g = int(raw[2:4], 16) / 255
+        b = int(raw[4:6], 16) / 255
+    except ValueError:
+        return 0.0
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
 # Marketing / LLM filler that makes small-business sites sound fake.
 _AI_CLICHE_RE = re.compile(
     r"\b("
@@ -45,9 +60,17 @@ def normalize_ai_website_config(
     if style not in DESIGN_STYLES:
         style = "modern"
 
+    primary_color = str(theme_in.get("primaryColor") or "#111111")
+    secondary_color = str(theme_in.get("secondaryColor") or "").strip()
+    if not secondary_color:
+        # Dark bases get light ink; light bases get dark ink.
+        secondary_color = (
+            "#F4F1EA" if _hex_luminance(primary_color) < 0.45 else "#171615"
+        )
     theme = {
         "style": style,
-        "primaryColor": str(theme_in.get("primaryColor") or "#111111"),
+        "primaryColor": primary_color,
+        "secondaryColor": secondary_color,
         "accentColor": str(theme_in.get("accentColor") or "#C9A45C"),
     }
 

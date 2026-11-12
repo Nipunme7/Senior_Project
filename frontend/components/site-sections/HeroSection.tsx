@@ -17,12 +17,12 @@ function HeroCopy({
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-xl text-left"}>
-      <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[#f7f3ea] sm:text-5xl lg:text-7xl">
+      <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--site-secondary)] sm:text-5xl lg:text-7xl">
         {headline}
       </h1>
       {subheadline ? (
         <p
-          className={`mt-6 text-base leading-relaxed text-[#d9d4c8] sm:text-lg ${
+          className={`mt-6 text-base leading-relaxed text-[var(--site-secondary)]/70 sm:text-lg ${
             align === "center" ? "mx-auto max-w-xl" : ""
           }`}
         >

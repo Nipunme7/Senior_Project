@@ -19,9 +19,10 @@ def gemini_website_config_schema() -> dict[str, Any]:
                 "properties": {
                     "style": {"type": "string"},
                     "primaryColor": {"type": "string"},
+                    "secondaryColor": {"type": "string"},
                     "accentColor": {"type": "string"},
                 },
-                "required": ["style", "primaryColor", "accentColor"],
+                "required": ["style", "primaryColor", "secondaryColor", "accentColor"],
             },
             "sections": {
                 "type": "array",

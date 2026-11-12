@@ -10,6 +10,7 @@ const baseConfig: WebsiteConfig = {
   theme: {
     style: "minimal",
     primaryColor: "#111111",
+    secondaryColor: "#F4EFE7",
     accentColor: "#0f766e",
   },
   sections: [
